@@ -14,3 +14,8 @@ SOCKET sock;
 STARTUPINFO startInfo;
 PROCESS_INFORMATION procInfo;
 struct sockaddr_in sockAddr;
+
+enum shells {
+    CMD,
+    POWERSHELL
+};
