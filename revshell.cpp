@@ -73,3 +73,14 @@ int main(int argc, char** argv)
     getchar();
     exit(0);
 }
+
+bool validateIpAddress(const char* ipAddress) {
+    struct sockaddr_in s;
+    int result = inet_pton(AF_INET, (PCSTR)ipAddress, &(s.sin_addr));
+    return result != 0;
+}
+
+bool validatePort(int port){
+    return (port > 0 && port < 65536)
+}
+
